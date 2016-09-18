@@ -20,9 +20,9 @@
     <item android:title="Login Menu">
         <menu>
             <item
-                android:id="@+id/log_in"
+                android:id="@+id/account_settings"
                 android:icon="@drawable/ic_menu_share"
-                android:title="LOGIN" />
+                android:title="Account Settings" />
             <item
                 android:id="@+id/log_out"
                 android:icon="@drawable/ic_menu_send"

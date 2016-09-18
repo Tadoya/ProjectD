@@ -18,6 +18,12 @@
             android:id="@+id/camera_view">
         </FrameLayout>
 
+        <SurfaceView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/surfaceView"
+            android:background="@android:color/transparent"/>
+
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"

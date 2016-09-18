@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import seoulapp.chok.rokseoul.firebase.GoogleSignInActivity;
+
 public class IntroActivity extends AppCompatActivity {
 
     Handler handler;
@@ -18,7 +20,8 @@ public class IntroActivity extends AppCompatActivity {
     Runnable mrun = new Runnable() {
         @Override
         public void run() {
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            startActivity(new Intent(getApplicationContext(), GoogleSignInActivity.class));
+            GoogleSignInActivity.stayLogin = true;
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }

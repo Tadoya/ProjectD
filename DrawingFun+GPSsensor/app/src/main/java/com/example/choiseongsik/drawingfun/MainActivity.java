@@ -22,11 +22,11 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -44,7 +44,7 @@ import android.widget.Toast;
  * August 2013
  *
  */
-public class MainActivity extends Activity implements OnClickListener, SensorEventListener {
+public class MainActivity extends AppCompatActivity implements OnClickListener, SensorEventListener {
 
     //custom drawing view
     private DrawingView drawView;
@@ -403,8 +403,8 @@ public class MainActivity extends Activity implements OnClickListener, SensorEve
                 double mlat = location.getLatitude();
                 double mlng = location.getLongitude();
 
-                Toast toast = Toast.makeText(mContext, "위도: " + mlat + "경도: " + mlng, Toast.LENGTH_SHORT);
-                toast.show();
+                //Toast toast = Toast.makeText(mContext, "위도: " + mlat + "경도: " + mlng, Toast.LENGTH_SHORT);
+                //toast.show();
 
                 GPSData = "위도: " + mlat + "경도: " + mlng;
                 lat = mlat;
