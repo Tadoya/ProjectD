@@ -1,8 +1,4 @@
-package com.example.choiseongsik.drawingfun;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.UUID;
+package seoulapp.chok.rokseoul.drawingtool;
 
 import android.Manifest;
 import android.content.Context;
@@ -36,15 +32,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+
+import seoulapp.chok.rokseoul.firebase.StorageSet;
+import seoulapp.chok.rokseoul.R;
+
 /**
  * This is demo code to accompany the Mobiletuts+ tutorial series:
  * - Android SDK: Create a Drawing App
  *
  * Sue Smith
  * August 2013
+ * Modified by Tadoya
  *
  */
-public class MainActivity extends AppCompatActivity implements OnClickListener, SensorEventListener {
+public class DrawingActivity extends AppCompatActivity implements OnClickListener, SensorEventListener {
 
     //custom drawing view
     private DrawingView drawView;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     public static int RESULT_LOAD_IMAGE = 1;
 
     private ImageView imageView;
+    //private SurfaceView surfaceView;
 
     private FrameLayout camera_view;
 
@@ -84,10 +87,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     private Context mContext;
 
 
+    private StorageSet storageSet;
+    private String placeName = "royalpalace";
+    private FirebaseAuth mAuth;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_drawing);
+
+
+        mAuth = FirebaseAuth.getInstance();
+        storageSet = new StorageSet(this);
 
         //get drawing view
         drawView = (DrawingView)findViewById(R.id.drawing);
@@ -107,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         drawBtn.setOnClickListener(this);
 
         //set initial size
-        drawView.setBrushSize(mediumBrush);
+        drawView.setBrushSize(smallBrush);
 
         //erase button
         eraseBtn = (ImageButton)findViewById(R.id.erase_btn);
@@ -126,13 +138,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
         loadBtn.setOnClickListener(this);
 
         imageView = (ImageView)findViewById(R.id.imageView);
+        //surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
 
         camera_view = (FrameLayout)findViewById(R.id.camera_view);
 
         mContext = this;
 
+
         OriantationTool(); /** 방향 높이 각도 센서 설정 및 리스너 시작 **/
-        GPSTool(); /** GPS 위치 센서 설정 및 리스너 시작 **/
+        //GPSTool(); /** GPS 위치 센서 설정 및 리스너 시작 **/
+
 
     }
 
@@ -287,49 +302,18 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
             //save drawing
             AlertDialog.Builder saveDialog = new AlertDialog.Builder(this);
             saveDialog.setTitle("Save drawing");
-            saveDialog.setMessage("Save drawing to device Gallery?");
+            saveDialog.setMessage("Save drawing to firebase?");
             saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
                 public void onClick(DialogInterface dialog, int which){
                     //save drawing
                     drawView.setDrawingCacheEnabled(true);
-                    //attempt to save
-                    /*
-                    String imgSaved = MediaStore.Images.Media.insertImage(
-                            getContentResolver(), drawView.getDrawingCache(),
-                            UUID.randomUUID().toString()+".png", "drawing");
-                    Log.d("SAVE", imgSaved);
-                    //feedback
-                    if(imgSaved!=null){
-                        Toast savedToast = Toast.makeText(getApplicationContext(),
-                                "Drawing saved to Gallery!", Toast.LENGTH_SHORT);
-                        savedToast.show();
-                    }
-                    else{
-                        Toast unsavedToast = Toast.makeText(getApplicationContext(),
-                                "Oops! Image could not be saved.", Toast.LENGTH_SHORT);
-                        unsavedToast.show();
-                    }
-                    */
 
+                    //메모리그림을 변환
                     Bitmap screenshot = Bitmap.createBitmap(drawView.getDrawingCache());
-                    //drawView.setDrawingCacheEnabled(false);
 
-                    FileOutputStream fos;
-                    try {
-                        String fileName = UUID.randomUUID().toString();
-                        File mFile = new File("/sdcard/DrawingTest");
-                        if (!mFile.exists()) mFile.mkdirs();
+                    //firebase에 저장
+                    storageSet.uploadFromMemory(screenshot, placeName, mAuth.getCurrentUser().getUid());
 
-                        fos = new FileOutputStream(new File(mFile, fileName+".png"));
-                        screenshot.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                        fos.close();
-                        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(mFile.getAbsolutePath(), fileName+".png"))));
-                        Toast.makeText(getApplicationContext(), "저장 성공", Toast.LENGTH_SHORT).show();
-
-                    } catch (Exception e) {
-                        Log.e("photo","그림저장오류",e);
-                        Toast.makeText(getApplicationContext(), "저장 실패", Toast.LENGTH_SHORT).show();
-                    }
                     drawView.destroyDrawingCache();
                     drawView.startNew();
                 }
@@ -380,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
             imageView.setImageBitmap(bitmap);
+            //drawView.setImageBitmap(bitmap);
             // Do something with the bitmap
 
 
