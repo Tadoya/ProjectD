@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="seoulapp.chok.rokseoul.MainActivity"
+    tools:showIn="@layout/app_bar_main">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!_this is ContentMain.xml"
+        app:layout_constraintBottom_toBottomOf="@+id/content_main"
+        app:layout_constraintLeft_toLeftOf="@+id/content_main"
+        app:layout_constraintRight_toRightOf="@+id/content_main"
+        app:layout_constraintTop_toTopOf="@+id/content_main" />
+
+</android.support.constraint.ConstraintLayout>-->
+
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="seoulapp.chok.rokseoul.maps.MapsActivity" >
+        <fragment
+            android:id="@+id/content_map"
+            class = "com.google.android.gms.maps.MapFragment"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+
