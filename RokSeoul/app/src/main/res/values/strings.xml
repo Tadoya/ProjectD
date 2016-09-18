@@ -73,4 +73,8 @@
     <string name="sml">Small</string>
     <string name="med">Medium</string>
     <string name="lrg">Large</string>
+
+
+    <string name="note">Hi this is RokSeoul Application.</string>
+    <string name="jieun">Im JIEUN.</string>
 </resources>

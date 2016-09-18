@@ -1,4 +1,4 @@
-package seoulapp.chok.rokseoul;
+package seoulapp.chok.rokseoul.maps;
 
 /**
  * Created by JIEUN on 2016-08-16.
@@ -14,6 +14,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
+
+import seoulapp.chok.rokseoul.R;
 
 public abstract class PermissionUtils {
     public static void requestPermission(AppCompatActivity activity, int requestId,

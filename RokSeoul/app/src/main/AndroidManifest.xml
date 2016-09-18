@@ -15,7 +15,6 @@
     <uses-permission android:name="example.com.projectd.locationapi.maps.permission.MAPS_RECEIVE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -76,13 +75,11 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name="seoulapp.chok.rokseoul.MapsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-
         <activity android:name=".firebase.GoogleSignInActivity"/>
         <activity android:name=".firebase.BaseActivity"/>
 
         <activity android:name=".drawingtool.DrawingActivity"/>
+        <activity android:name=".maps.MapsActivity"/>
     </application>
 
 </manifest>

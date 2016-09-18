@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import seoulapp.chok.rokseoul.drawingtool.DrawingActivity;
 import seoulapp.chok.rokseoul.firebase.GoogleSignInActivity;
 import seoulapp.chok.rokseoul.firebase.models.User;
+import seoulapp.chok.rokseoul.maps.MapsActivity;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
