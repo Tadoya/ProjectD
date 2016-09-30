@@ -77,4 +77,6 @@
 
     <string name="note">Hi this is RokSeoul Application.</string>
     <string name="jieun">Im JIEUN.</string>
+    <string name="qrHere">QR Code Reader in HERE!</string>
+
 </resources>

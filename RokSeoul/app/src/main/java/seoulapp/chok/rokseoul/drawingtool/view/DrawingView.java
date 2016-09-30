@@ -1,4 +1,4 @@
-package seoulapp.chok.rokseoul.drawingtool;
+package seoulapp.chok.rokseoul.drawingtool.view;
 
 
 import android.content.Context;

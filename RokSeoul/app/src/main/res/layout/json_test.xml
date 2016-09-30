@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_weight="1"
+        android:layout_height="0px">
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button"
+            android:text="BUTTON"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <TextView
+                android:id="@+id/note_text"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:maxLength="160"
+                android:maxLines="4"
+                android:minLines="4"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:text="@string/jieun"
+                android:textSize="5pt" />
+
+            <TextView
+                android:id="@+id/tvReslut1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

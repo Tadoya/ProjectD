@@ -12,12 +12,11 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         >
-        <FrameLayout
+
+        <TextureView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/camera_view">
-        </FrameLayout>
-
+            android:id="@+id/textureView"/>
 
         <ImageView
             android:id="@+id/imageView"
@@ -26,7 +25,7 @@
             android:background="@android:color/transparent"/>
 
         <!-- Custom View -->
-        <seoulapp.chok.rokseoul.drawingtool.DrawingView
+        <seoulapp.chok.rokseoul.drawingtool.view.DrawingView
             android:id="@+id/drawing"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

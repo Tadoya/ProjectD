@@ -1,5 +1,6 @@
 package seoulapp.chok.rokseoul;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -21,11 +23,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import seoulapp.chok.rokseoul.drawingtool.DrawingActivity;
 import seoulapp.chok.rokseoul.firebase.GoogleSignInActivity;
 import seoulapp.chok.rokseoul.firebase.models.User;
 import seoulapp.chok.rokseoul.maps.MapsActivity;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -36,19 +41,31 @@ public class MainActivity extends AppCompatActivity
     private DatabaseReference mDatabase;
     private ChildEventListener mChildeEventListener;
     public static int doodleCount;
+    private FragmentManager fm;
 
     private TextView profile_userName, profile_email, profile_doodles;
+    private SupportMapFragment mSupportMapFragment;
+    public static String placeName="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //setContentView(R.layout.activity_main_second);
         mAuth = FirebaseAuth.getInstance();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                /*
+                IntentIntegrator scanIntegrator = new IntentIntegrator(MainActivity.this);
+                scanIntegrator.setCaptureActivity(QRAcvitivy.class);
+                scanIntegrator.setOrientationLocked(true);
+                scanIntegrator.initiateScan();
+                */
 
                 startActivity(new Intent(getApplicationContext(), DrawingActivity.class));
             }
@@ -122,6 +139,10 @@ public class MainActivity extends AppCompatActivity
         };
         mDatabase.addChildEventListener(mChildeEventListener);
 
+
+        FragmentManager fm = getFragmentManager();
+        fm.beginTransaction().replace(R.id.content_frame, new MapsActivity()).commit();
+
     }
 
     @Override
@@ -139,12 +160,23 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        FragmentManager fm = getFragmentManager();
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        android.app.FragmentManager fragmentManager = getFragmentManager();
 
         if (id == R.id.nav_camera) {
 
-            Toast.makeText(MainActivity.this, "카메라를 선택했습니다.", Toast.LENGTH_SHORT).show();
+            /**
+             * create an instance of the IntentIntegrator class we imported,
+             * and then call on the initiateScan() method to start scanning
+             */
+            if(placeName.isEmpty()) {
+                IntentIntegrator scanIntegrator = new IntentIntegrator(this);
+                scanIntegrator.setCaptureActivity(QRAcvitivy.class);
+                scanIntegrator.setOrientationLocked(true);
+                scanIntegrator.initiateScan();
+            }
 
         } else if (id == R.id.nav_gallery) {
 
@@ -170,8 +202,17 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.my_doodle) {
 
             //Toast.makeText(MainActivity.this, "내 낙서를 선택했습니다.", Toast.LENGTH_SHORT).show();
-
-            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+            //fragmentManager.beginTransaction().replace()
+            //startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+            fm.beginTransaction().replace(R.id.content_frame, new MapsActivity()).commit();
+            /*
+              FragmentManager fragmentManager = activity.getSupportFragmentManager();
+             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+             Fragment newFragment = new FragmentType1();
+             fragmentTransaction.replace(R.id.frameTitle, casinodetailFragment, "fragmentTag");
+             //fragmentTransaction.addToBackStack(null);
+             fragmentTransaction.commit();
+             */
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -194,6 +235,58 @@ public class MainActivity extends AppCompatActivity
         super.onStop();
         if(mChildeEventListener != null) {
             mDatabase.removeEventListener(mChildeEventListener);
+        }
+    }
+
+    /**
+     * The results of the scan will be returned and we'll be able to retrieve it in the onActivityResult() method
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        /**
+         * Parse the result into an instance of the IntentResult class we imported
+         */
+        IntentResult scanningIntentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        /**
+         * Check the scanningIntentResult object is it null or not, to proceed only if we have a valid result
+         */
+        if (scanningIntentResult != null) {
+            /**
+             * Retrieve the content and the format of the scan as strings value.
+             */
+            String scanContent = scanningIntentResult.getContents();
+            String scanFormat = scanningIntentResult.getFormatName();
+            /**
+             * if condition after getting scanContent and scanFormat,
+             * checking on them if there are consisting real data or not.
+             */
+            if(scanContent != null && scanFormat != null) {
+                /**
+                 * Now our program has the format and content of the scanned data,
+                 * so you can do whatever you want with it.
+                 */
+                //contentTextView.setText("Content : " + scanContent);
+                //formatTextView.setText("Format : " + scanFormat);
+                Toast.makeText(getApplicationContext(), "Contents : "+scanContent
+                        +"\nFormat : "+ scanFormat, Toast.LENGTH_LONG).show();
+                placeName = scanContent;
+                Intent intent = new Intent(getApplicationContext(), DrawingActivity.class);
+                startActivity(intent);
+                Log.d("QRcode", "Main-placeName : " +placeName);
+            } else {
+                Toast.makeText(getApplicationContext(), "No scan data received!", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            /**
+             * If scan data is not received
+             * (for example, if the user cancels the scan by pressing the back button),
+             * we can simply output a message.
+             */
+            Toast.makeText(getApplicationContext(), "No scan data received!", Toast.LENGTH_SHORT).show();
         }
     }
 }

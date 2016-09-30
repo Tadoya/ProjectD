@@ -49,7 +49,8 @@ public class StorageSet {
     }
 
 
-    public void uploadFromMemory(Bitmap bitmap, String placeName, final String userID) {
+    public void uploadFromMemory(Bitmap bitmap, String placeName
+            , final String userID, String direction, int degree) {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
@@ -57,7 +58,7 @@ public class StorageSet {
 
         // [START get_child_ref]
         String nowTime = "" + new Date().getTime();
-        final StorageReference doodleRef = storageRef.child(placeName).child(userID).child(nowTime);
+        final StorageReference doodleRef = storageRef.child(placeName).child(direction).child(userID).child(nowTime);
         // [END get_child_ref]
 
         // Create file metadata including the content type
@@ -66,6 +67,8 @@ public class StorageSet {
                 .setCustomMetadata("userID", userID)
                 .setCustomMetadata("time", nowTime)
                 .setCustomMetadata("place", placeName)
+                .setCustomMetadata("direction", direction)
+                .setCustomMetadata("degree", ""+degree)
                 .build();
 
         // [START_EXCLUDE]

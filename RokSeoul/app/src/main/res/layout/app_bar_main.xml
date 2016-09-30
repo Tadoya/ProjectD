@@ -7,17 +7,21 @@
     android:fitsSystemWindows="true"
     tools:context="seoulapp.chok.rokseoul.MainActivity">
 
-    <!-- <include layout="@layout/activity_maps" /> -->
-    <include layout="@layout/activity_maps"
-        android:id="@+id/include" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        app:layout_anchor="@+id/include"
-        app:layout_anchorGravity="bottom|right"
-        app:srcCompat="@drawable/drawon" />
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include layout="@layout/content_main" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:layout_gravity="bottom|right"
+            app:srcCompat="@drawable/drawon" />
+    </FrameLayout>
+
+
 
 </android.support.design.widget.CoordinatorLayout>

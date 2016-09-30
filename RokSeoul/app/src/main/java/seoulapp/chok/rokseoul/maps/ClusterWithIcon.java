@@ -15,30 +15,24 @@ import seoulapp.chok.rokseoul.R;
  * 클러스터링과 마커는 다른개념이라고 한다...클러스터에 이미지를 입히기 위한 클래스
  */
 
-public class ClusterWithIcon extends DefaultClusterRenderer<seoulapp.chok.rokseoul.maps.ClusterItem>{
+public class ClusterWithIcon extends DefaultClusterRenderer<ClusterItem>{
 
-    public ClusterWithIcon(Context context, GoogleMap map, ClusterManager<seoulapp.chok.rokseoul.maps.ClusterItem> clusterManager) {
+    public ClusterWithIcon(Context context, GoogleMap map, ClusterManager<ClusterItem> clusterManager) {
         super(context, map, clusterManager);
     }
-/*
-*
-* mMap
-* .addMarker(
-* new MarkerOptions()
-* .position(mo.getPosition())
-* .icon(BitmapDescriptorFactory
-* .fromResource(R.mipmap.ic_coin)));
-*
-*
-* markerOptions.icon(item.getIcon());
-        markerOptions.snippet(item.getSnippet());
-        markerOptions.title(item.getTitle());
+
+    public void onBeforeClusterItemRendered(ClusterItem item, MarkerOptions markerOptions){
         super.onBeforeClusterItemRendered(item, markerOptions);
-        }
-*
-* */
-    public void onBeforeClusterItemRendered(seoulapp.chok.rokseoul.maps.ClusterItem item, MarkerOptions markerOptions){
-        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_coin));
-        super.onBeforeClusterItemRendered(item, markerOptions);
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.brush));
+        markerOptions.title(item.getSightN());
+        markerOptions.position(item.getPosition());
+        markerOptions.snippet(item.getContents());
     }
+
+    @Override
+    protected boolean shouldRenderAsCluster(Cluster cluster) {
+        // Always render clusters.
+        return cluster.getSize() > 1;
+    }
+
 }
