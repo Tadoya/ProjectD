@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '24.0.2'
+    buildToolsVersion '24.0.3'
     defaultConfig {
         applicationId "seoulapp.chok.rokseoul"
         minSdkVersion 19
@@ -20,7 +20,7 @@ android {
 }
 
 configurations.all {
-    resolutionStrategy.force 'com.android.support:support-annotations:24.0.0'
+    resolutionStrategy.force 'com.android.support:support-annotations:24.+'
 }
 
 dependencies {

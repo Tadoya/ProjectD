@@ -24,6 +24,7 @@ public class SensorSet2 implements SensorEventListener {
     private int preAZ=0;
     private String preDI;
     private int count=0;
+    private int stableCount = 0;
 
     public SensorSet2(Context context){
         this.context = context;
@@ -45,15 +46,22 @@ public class SensorSet2 implements SensorEventListener {
 
             Log.d("sensorset", "degree : "+mAzimuth + " / preAZ : " + fAzimuth+ "/ 방위 :" + getDirectionFromDegrees(fAzimuth));
             count++;
+
             if(getDirectionFromDegrees(fAzimuth) != preDI && count>20){
+                stableCount++;
                 preDI = getDirectionFromDegrees(fAzimuth);
-                Toast.makeText(context, "방위 : "+getDirectionFromDegrees(fAzimuth)
-                        + " / degree : " + mAzimuth
-                        , Toast.LENGTH_SHORT).show();
+                if(stableCount <= 5) {
+                    Toast.makeText(context, "방위 : " + getDirectionFromDegrees(fAzimuth)
+                                    + " / degree : " + mAzimuth
+                            , Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(context, "센서 상태가 불안정합니다.\n주변에 자성물체가 있는지 확인하세요!", Toast.LENGTH_SHORT).show();
+                }
                 count = 0;
             }
-            if(count==50) {
+            if(count==100) {
                 Toast.makeText(context, "센서값이 안정되었습니다. 저장하세요!", Toast.LENGTH_LONG).show();
+                stableCount =0;
             }
         }
     }

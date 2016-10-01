@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import seoulapp.chok.rokseoul.drawingtool.DrawingActivity;
+import seoulapp.chok.rokseoul.drawingtool.view.AutoFitTextureView;
 
 /**
  * Created by BRB_LAB on 2016-06-07.
@@ -55,10 +57,20 @@ public class Camera2Preview extends Thread {
     private CameraDevice mCameraDevice;
     private CaptureRequest.Builder mPreviewBuilder;
     private CameraCaptureSession mPreviewSession;
-    private TextureView mTextureView;
+    private AutoFitTextureView mTextureView;
     private String cameraId;
 
-    public Camera2Preview(Activity activity, TextureView textureView) {
+    /**
+     * Max preview width that is guaranteed by Camera2 API
+     */
+    private static final int MAX_PREVIEW_WIDTH = 1920;
+
+    /**
+     * Max preview height that is guaranteed by Camera2 API
+     */
+    private static final int MAX_PREVIEW_HEIGHT = 1080;
+
+    public Camera2Preview(Activity activity, AutoFitTextureView textureView) {
         mContext = activity.getApplicationContext();
         mActivity = activity;
         mTextureView = textureView;
@@ -76,12 +88,35 @@ public class Camera2Preview extends Thread {
                     Point displaySize = new Point();
                     int maxPreviewWidth = displaySize.x;
                     int maxPreviewHeight = displaySize.y;
+
+
+                    if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
+                        maxPreviewWidth = MAX_PREVIEW_WIDTH;
+                    }
+
+                    if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) {
+                        maxPreviewHeight = MAX_PREVIEW_HEIGHT;
+                    }
+
                     // For still image captures, we use the largest available size.
                     Size largest = Collections.max(
                             Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                             new CompareSizesByArea());
                     mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class)
                             , width, height, maxPreviewWidth, maxPreviewHeight, largest);
+
+                    // We fit the aspect ratio of TextureView to the size of preview we picked.
+
+                    /*
+                    int orientation = mActivity.getResources().getConfiguration().orientation;
+                    if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        mTextureView.setAspectRatio(
+                                mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    } else {
+                        mTextureView.setAspectRatio(
+                                mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    }*/
+
                     this.cameraId = cameraId;
                 }
                 if(this.cameraId != null) break;

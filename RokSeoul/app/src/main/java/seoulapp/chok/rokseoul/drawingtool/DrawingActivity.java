@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -40,6 +41,7 @@ import seoulapp.chok.rokseoul.drawingtool.cameraset.Camera2Preview;
 import seoulapp.chok.rokseoul.drawingtool.cameraset.Camera_SurfaceTextureListener;
 import seoulapp.chok.rokseoul.drawingtool.sensorset.SensorSet;
 import seoulapp.chok.rokseoul.drawingtool.sensorset.SensorSet2;
+import seoulapp.chok.rokseoul.drawingtool.view.AutoFitTextureView;
 import seoulapp.chok.rokseoul.drawingtool.view.DrawingView;
 import seoulapp.chok.rokseoul.firebase.StorageSet;
 import seoulapp.chok.rokseoul.R;
@@ -64,7 +66,8 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
     private float smallBrush, mediumBrush, largeBrush;
 
     //Camera
-    private TextureView textureView;
+    //private TextureView textureView;
+    private AutoFitTextureView textureView;
 
     //Camera1preview
     private Camera_SurfaceTextureListener cameraListener;
@@ -97,6 +100,7 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_drawing);
 
 
@@ -141,9 +145,10 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
 
         imageView = (ImageView) findViewById(R.id.imageView);
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //API21이상
-            textureView = (TextureView) findViewById(R.id.textureView);
+            //textureView = (TextureView) findViewById(R.id.textureView);
+            textureView = (AutoFitTextureView) findViewById(R.id.textureView);
             camera2Preview = new Camera2Preview(this, textureView);
         } else {
             //API 19
@@ -160,7 +165,7 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
     @Override
     protected void onPause() {
         super.onPause();
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera2Preview.onPause();
             Log.d("SDK", "SDK version 21+: " + Build.VERSION.SDK_INT);
         } else {
@@ -173,11 +178,12 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
     @Override
     protected void onResume() {
         super.onResume();
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             camera2Preview.onResume();
             Log.d("SDK", "SDK version 21+: " + Build.VERSION.SDK_INT);
         } else {
-            textureView = (TextureView) findViewById(R.id.textureView);
+            //textureView = (TextureView) findViewById(R.id.textureView);
+            textureView = (AutoFitTextureView) findViewById(R.id.textureView);
             textureView.setSurfaceTextureListener(cameraListener);
             Log.d("SDK", "SDK version 21- : " + Build.VERSION.SDK_INT);
         }
@@ -202,7 +208,8 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
                     int grantResult = grantResults[i];
                     if (permission.equals(Manifest.permission.CAMERA)) {
                         if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                            textureView = (TextureView) findViewById(R.id.textureView);
+                            //textureView = (TextureView) findViewById(R.id.textureView);
+                            textureView = (AutoFitTextureView) findViewById(R.id.textureView);
                             camera2Preview = new Camera2Preview(this, textureView);
                             camera2Preview.openCamera(textureView.getWidth(), textureView.getHeight());
                             Log.d(TAG,"mPreview set");

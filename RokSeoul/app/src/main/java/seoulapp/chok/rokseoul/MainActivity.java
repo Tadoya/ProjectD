@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity
     private User user;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
-    private ChildEventListener mChildeEventListener;
+    private ValueEventListener mValueEventListener;
     public static int doodleCount;
     private FragmentManager fm;
 
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity
                 //첫 로그인 시 "doodles"가 비었을 때를 대비한 예외처리
                 try {
                     doodleCount = Integer.parseInt(dataSnapshot.child("doodles").getValue().toString());
-                    Log.d("MainActivity", "datasnapshot.doodles: " + doodleCount);
+                    Log.d("MainActivity", "datasnapshot.doodles(Onetime): " + doodleCount);
                 }catch (Exception e){
                     doodleCount = 0;
                 }
@@ -110,26 +110,17 @@ public class MainActivity extends AppCompatActivity
             }
         });
         //앱 시작 후(해당 엑티비티 내에서 DB변경이 있을 경우 실시간 변경
-        mChildeEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-            }
+        mValueEventListener = new ValueEventListener() {
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    doodleCount = Integer.parseInt(dataSnapshot.child("doodles").getValue().toString());
+                    Log.d("MainActivity", "datasnapshot.doodles(realtime): " + doodleCount);
+                }catch (Exception e){
+                    doodleCount = 0;
+                }
+                profile_doodles.setText(""+doodleCount);
             }
 
             @Override
@@ -137,7 +128,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d("MainActivity", "DB Error");
             }
         };
-        mDatabase.addChildEventListener(mChildeEventListener);
+        mDatabase.addValueEventListener(mValueEventListener);
 
 
         FragmentManager fm = getFragmentManager();
@@ -233,8 +224,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         super.onStop();
-        if(mChildeEventListener != null) {
-            mDatabase.removeEventListener(mChildeEventListener);
+        if(mValueEventListener != null) {
+            mDatabase.removeEventListener(mValueEventListener);
         }
     }
 

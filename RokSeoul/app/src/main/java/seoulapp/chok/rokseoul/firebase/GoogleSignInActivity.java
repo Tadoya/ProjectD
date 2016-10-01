@@ -305,7 +305,7 @@ public class GoogleSignInActivity extends BaseActivity implements
         User user = new User(name, email);
 
         mDatabase.child("users").child(userId).child("email").setValue(email);
-        mDatabase.child("users").child(userId).child("name").setValue(name);
+        mDatabase.child("users").child(userId).child("username").setValue(name);
     }
     // [END basic_write]
 }
