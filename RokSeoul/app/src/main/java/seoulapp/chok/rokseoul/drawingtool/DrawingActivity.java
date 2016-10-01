@@ -191,6 +191,12 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
         sensorSet2.onResume();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        storageSet.onStop();
+    }
+
     /**
      * API 21+에서 카메라 사용을 승인했을 때 다시 카메라뷰를 띄우기위해
      * @param requestCode

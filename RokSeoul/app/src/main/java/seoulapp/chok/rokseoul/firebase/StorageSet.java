@@ -10,8 +10,12 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -32,9 +36,12 @@ public class StorageSet {
     private static final String TAG = "StorageSet";
     private Activity activity;
 
+    private FirebaseAuth mAuth;
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+    private ValueEventListener mValueEventListener;
 
+    private int doodleCount;
     // Create a storage reference from our app
     private StorageReference storageRef = storage.getReferenceFromUrl("gs://rokseoul-16bb2.appspot.com/");
 
@@ -44,11 +51,36 @@ public class StorageSet {
 
 
 
-    public StorageSet(Activity activity){
+    public StorageSet(Activity activity) {
         this.activity = activity;
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(mAuth.getCurrentUser().getUid());
+        //앱 시작 후(해당 엑티비티 내에서 DB변경이 있을 경우 실시간 변경
+        mValueEventListener = new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    doodleCount = Integer.parseInt(dataSnapshot.child("doodles").getValue().toString());
+                    Log.d("MainActivity", "datasnapshot.doodles(realtime-drawing): " + doodleCount);
+                }catch (Exception e){
+                    doodleCount = 0;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d("MainActivity", "DB Error");
+            }
+        };
+        mDatabase.addValueEventListener(mValueEventListener);
     }
 
-
+    public void onStop(){
+        if(mValueEventListener != null) {
+            mDatabase.removeEventListener(mValueEventListener);
+        }
+    }
     public void uploadFromMemory(Bitmap bitmap, String placeName
             , final String userID, String direction, int degree) {
 
@@ -96,8 +128,8 @@ public class StorageSet {
                 Log.d(TAG, "uploadFromUri:onSuccess");
 
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                mDatabase.child("users").child(userID).child("doodles").setValue(++MainActivity.doodleCount);
-                Log.d("MainActivity","doodleCount : "+MainActivity.doodleCount);
+                mDatabase.child("doodles").setValue(doodleCount+1);
+                Log.d("MainActivity","doodleCount(storage): "+doodleCount+1);
                 //업로드한 그림 다운로드 경로..
                 mDownloadUrl = taskSnapshot.getMetadata().getDownloadUrl();
 

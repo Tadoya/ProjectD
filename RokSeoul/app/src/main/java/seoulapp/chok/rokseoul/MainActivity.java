@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -128,7 +127,6 @@ public class MainActivity extends AppCompatActivity
                 Log.d("MainActivity", "DB Error");
             }
         };
-        mDatabase.addValueEventListener(mValueEventListener);
 
 
         FragmentManager fm = getFragmentManager();
@@ -215,15 +213,17 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         //로그인 안되어있으면 앱 종료
-        profile_doodles.setText(""+doodleCount);
         if(mAuth.getCurrentUser() == null){
             finish();
         }
+        mDatabase.addValueEventListener(mValueEventListener);
+        profile_doodles.setText(""+doodleCount);
+
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         if(mValueEventListener != null) {
             mDatabase.removeEventListener(mValueEventListener);
         }
