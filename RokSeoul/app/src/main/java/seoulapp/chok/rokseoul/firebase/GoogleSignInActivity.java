@@ -16,11 +16,15 @@
 
 package seoulapp.chok.rokseoul.firebase;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,7 +72,6 @@ public class GoogleSignInActivity extends BaseActivity implements
 
     private GoogleApiClient mGoogleApiClient;
     private TextView mStatusTextView;
-    private TextView mDetailTextView;
 
     public static Boolean stayLogin = true;
 
@@ -82,12 +85,12 @@ public class GoogleSignInActivity extends BaseActivity implements
 
         // Views
         mStatusTextView = (TextView) findViewById(R.id.status);
-        mDetailTextView = (TextView) findViewById(R.id.detail);
 
         // Button listeners
         findViewById(R.id.sign_in_button).setOnClickListener(this);
         findViewById(R.id.sign_out_button).setOnClickListener(this);
         findViewById(R.id.disconnect_button).setOnClickListener(this);
+        findViewById(R.id.username_change_button).setOnClickListener(this);
 
         // [START config_signin]
         // Configure Google Sign In
@@ -248,16 +251,16 @@ public class GoogleSignInActivity extends BaseActivity implements
         hideProgressDialog();
         if (user != null) {
             mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
-            mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
 
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
             findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
+            findViewById(R.id.username_change_button).setVisibility(View.VISIBLE);
         } else {
             mStatusTextView.setText(R.string.signed_out);
-            mDetailTextView.setText(null);
 
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
+            findViewById(R.id.username_change_button).setVisibility(View.GONE);
         }
     }
 
@@ -278,6 +281,25 @@ public class GoogleSignInActivity extends BaseActivity implements
             signOut();
         } else if (i == R.id.disconnect_button) {
             revokeAccess();
+        } else if (i == R.id.username_change_button){
+            AlertDialog.Builder usernameDialog = new AlertDialog.Builder(this);
+            usernameDialog.setTitle("Change username");
+            usernameDialog.setMessage("What do you want to change your name to?");
+            final EditText input = new EditText(this);
+            usernameDialog.setView(input);
+            usernameDialog.setPositiveButton("Change", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    //save drawing
+                    mDatabase.child("users").child(mAuth.getCurrentUser()
+                            .getUid()).child("username").setValue(input.getText().toString());
+                }
+            });
+            usernameDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            usernameDialog.show();
         }
     }
 
@@ -302,10 +324,9 @@ public class GoogleSignInActivity extends BaseActivity implements
 
     // [START basic_write]
     private void writeNewUser(String userId, String name, String email) {
-        User user = new User(name, email);
 
         mDatabase.child("users").child(userId).child("email").setValue(email);
-        mDatabase.child("users").child(userId).child("username").setValue(name);
+        //mDatabase.child("users").child(userId).child("username").setValue(name);
     }
     // [END basic_write]
 }

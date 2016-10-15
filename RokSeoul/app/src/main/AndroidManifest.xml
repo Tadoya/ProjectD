@@ -81,7 +81,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".firebase.GoogleSignInActivity"/>
+        <activity android:name=".firebase.GoogleSignInActivity"
+            android:screenOrientation="portrait"/>
         <activity android:name=".firebase.BaseActivity"/>
 
         <activity android:name=".drawingtool.DrawingActivity"

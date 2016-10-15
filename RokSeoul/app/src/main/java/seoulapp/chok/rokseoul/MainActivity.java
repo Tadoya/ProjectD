@@ -9,13 +9,11 @@ import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,15 +33,16 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
-    private User user;
+    private static final String TAG = "MainActivity";
     private FirebaseAuth mAuth;
-    private DatabaseReference mDatabase;
-    private ValueEventListener mValueEventListener;
-    public static int doodleCount;
+    private DatabaseReference mMyDatabase;
+    private DatabaseReference mTotalDoodles;
+    private ValueEventListener mMyValueEventListener;
+    private ValueEventListener mTotalValueEventListener;
+
     private FragmentManager fm;
 
-    private TextView profile_userName, profile_email, profile_doodles;
-    private SupportMapFragment mSupportMapFragment;
+    private TextView profile_userName, profile_email, profile_doodles, profile_totaldoodles;
     public static String placeName="";
 
     @Override
@@ -71,55 +70,69 @@ public class MainActivity extends AppCompatActivity
         });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer,  R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                mTotalDoodles.addListenerForSingleValueEvent(mTotalValueEventListener);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                if(mTotalValueEventListener != null) mTotalDoodles.removeEventListener(mTotalValueEventListener);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        drawer.openDrawer(navigationView);
+
         View v = navigationView.getHeaderView(0);
         profile_userName = (TextView) v.findViewById(R.id.profile_userName);
         profile_email = (TextView) v.findViewById(R.id.profile_email);
         profile_doodles = (TextView) v.findViewById(R.id.profile_doodles);
+        profile_totaldoodles = (TextView) v.findViewById(R.id.profile_totaldoodles);
 
-        //DB경로
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(mAuth.getCurrentUser().getUid());
-        //앱 시작시 DB한번 읽기
-        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+        v.findViewById(R.id.profile_imageView).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDataChange(final DataSnapshot dataSnapshot) {
-                user = dataSnapshot.getValue(User.class);
-
-                //첫 로그인 시 "doodles"가 비었을 때를 대비한 예외처리
-                try {
-                    doodleCount = Integer.parseInt(dataSnapshot.child("doodles").getValue().toString());
-                    Log.d("MainActivity", "datasnapshot.doodles(Onetime): " + doodleCount);
-                }catch (Exception e){
-                    doodleCount = 0;
-                }
-                profile_doodles.setText(""+doodleCount);
-                profile_userName.setText(user.username);
-                profile_email.setText(user.email);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.d("MainActivity", "DB Error");
+            public void onClick(View view) {
+                GoogleSignInActivity.stayLogin = false;
+                Intent intent = new Intent(getApplicationContext(),GoogleSignInActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
             }
         });
+
+
+        //DB경로
+        mMyDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(mAuth.getCurrentUser().getUid());
+        mTotalDoodles = FirebaseDatabase.getInstance().getReference().child("totaldoodles");
+
         //앱 시작 후(해당 엑티비티 내에서 DB변경이 있을 경우 실시간 변경
-        mValueEventListener = new ValueEventListener() {
+        mMyValueEventListener = new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
-                    doodleCount = Integer.parseInt(dataSnapshot.child("doodles").getValue().toString());
+                    User user = dataSnapshot.getValue(User.class);
+                    profile_userName.setText(user.username);
+                    profile_email.setText(user.email);
+                    String doodleCount = dataSnapshot.child("doodles").getValue().toString();
+                    profile_doodles.setText(doodleCount);
                     Log.d("MainActivity", "datasnapshot.doodles(realtime): " + doodleCount);
                 }catch (Exception e){
-                    doodleCount = 0;
+                    Log.e(TAG, "databaseDoodle Error"+e);
                 }
-                profile_doodles.setText(""+doodleCount);
+
             }
 
             @Override
@@ -128,10 +141,26 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
+        mTotalValueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    String totalDoodles = dataSnapshot.getValue().toString();
+                    profile_totaldoodles.setText(totalDoodles);
+                    Log.d(TAG, "Totaldoodles : " +totalDoodles);
+                }catch (Exception e){
+                    Log.e(TAG,"Totaldoodles : null");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d("DrawingActivity", "totalDB error"+ databaseError);
+            }
+        };
 
         FragmentManager fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.content_frame, new MapsActivity()).commit();
-
     }
 
     @Override
@@ -143,6 +172,7 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
         }
     }
+
 
 
 
@@ -216,17 +246,15 @@ public class MainActivity extends AppCompatActivity
         if(mAuth.getCurrentUser() == null){
             finish();
         }
-        mDatabase.addValueEventListener(mValueEventListener);
-        profile_doodles.setText(""+doodleCount);
-
+        mMyDatabase.addValueEventListener(mMyValueEventListener);
+        mTotalDoodles.addListenerForSingleValueEvent(mTotalValueEventListener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(mValueEventListener != null) {
-            mDatabase.removeEventListener(mValueEventListener);
-        }
+        if(mMyValueEventListener != null) mMyDatabase.removeEventListener(mMyValueEventListener);
+        if(mTotalValueEventListener != null) mTotalDoodles.removeEventListener(mTotalValueEventListener);
     }
 
     /**
@@ -280,4 +308,5 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(getApplicationContext(), "No scan data received!", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

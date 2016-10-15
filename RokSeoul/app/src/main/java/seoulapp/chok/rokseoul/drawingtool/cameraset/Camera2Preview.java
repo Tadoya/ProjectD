@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -85,10 +84,50 @@ public class Camera2Preview extends Thread {
                 CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
                 if (characteristics.get(characteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
                     StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+
+                    // For still image captures, we use the largest available size.
+                    Size largest = Collections.max(
+                            Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
+                            new CompareSizesByArea());
+
+
+                    // Find out if we need to swap dimension to get the preview size relative to sensor
+                    // coordinate.
+                    int displayRotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+                    //noinspection ConstantConditions
+                    int mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                    boolean swappedDimensions = false;
+                    switch (displayRotation) {
+                        case Surface.ROTATION_0:
+                        case Surface.ROTATION_180:
+                            if (mSensorOrientation == 90 || mSensorOrientation == 270) {
+                                swappedDimensions = true;
+                            }
+                            break;
+                        case Surface.ROTATION_90:
+                        case Surface.ROTATION_270:
+                            if (mSensorOrientation == 0 || mSensorOrientation == 180) {
+                                swappedDimensions = true;
+                            }
+                            break;
+                        default:
+                            Log.e(TAG, "Display rotation is invalid: " + displayRotation);
+                    }
+
                     Point displaySize = new Point();
+                    mActivity.getWindowManager().getDefaultDisplay().getSize(displaySize);
+                    int rotatedPreviewWidth = width;
+                    int rotatedPreviewHeight = height;
                     int maxPreviewWidth = displaySize.x;
                     int maxPreviewHeight = displaySize.y;
 
+                    if (swappedDimensions) {
+                        rotatedPreviewWidth = height;
+                        rotatedPreviewHeight = width;
+                        maxPreviewWidth = displaySize.y;
+                        maxPreviewHeight = displaySize.x;
+                    }
 
                     if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
                         maxPreviewWidth = MAX_PREVIEW_WIDTH;
@@ -98,12 +137,8 @@ public class Camera2Preview extends Thread {
                         maxPreviewHeight = MAX_PREVIEW_HEIGHT;
                     }
 
-                    // For still image captures, we use the largest available size.
-                    Size largest = Collections.max(
-                            Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
-                            new CompareSizesByArea());
                     mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class)
-                            , width, height, maxPreviewWidth, maxPreviewHeight, largest);
+                            , rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth, maxPreviewHeight, largest);
 
                     // We fit the aspect ratio of TextureView to the size of preview we picked.
 
@@ -123,7 +158,7 @@ public class Camera2Preview extends Thread {
             }
             int permissionCamera = ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA);
             if(permissionCamera == PackageManager.PERMISSION_DENIED) {
-                ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.CAMERA}, DrawingActivity.REQUEST_CAMERA);
+                ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.CAMERA}, DrawingActivity.REQUEST_CAMERA);
             } else {
                 manager.openCamera(cameraId, mStateCallback, null);
             }
@@ -310,9 +345,10 @@ public class Camera2Preview extends Thread {
         List<Size> notBigEnough = new ArrayList<>();
         int w = aspectRatio.getWidth();
         int h = aspectRatio.getHeight();
+        final double ASPECT_TOLERANCE = 0.1;
         for (Size option : choices) {
             if (option.getWidth() <= maxWidth && option.getHeight() <= maxHeight &&
-                    option.getHeight() == option.getWidth() * h / w) {
+                    Math.abs(option.getHeight() - option.getWidth() * h / w)>ASPECT_TOLERANCE) {
                 if (option.getWidth() >= textureViewWidth &&
                         option.getHeight() >= textureViewHeight) {
                     bigEnough.add(option);

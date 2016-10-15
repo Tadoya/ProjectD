@@ -34,11 +34,13 @@
             android:id="@+id/status"
             style="@style/ThemeOverlay.MyTextDetail"
             android:text="@string/signed_out" />
-
-        <TextView
-            android:id="@+id/detail"
-            style="@style/ThemeOverlay.MyTextDetail"
-            tools:text="Firebase User ID: 123456789abc" />
+        <Button
+            android:id="@+id/username_change_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change my name"
+            android:theme="@style/ThemeOverlay.MyDarkButton"
+            android:backgroundTint="@android:color/holo_orange_light" />
 
     </LinearLayout>
 

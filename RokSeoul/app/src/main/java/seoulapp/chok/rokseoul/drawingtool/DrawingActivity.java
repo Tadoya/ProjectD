@@ -1,20 +1,12 @@
 package seoulapp.chok.rokseoul.drawingtool;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,10 +17,10 @@ import android.content.DialogInterface;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,7 +31,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import seoulapp.chok.rokseoul.MainActivity;
 import seoulapp.chok.rokseoul.drawingtool.cameraset.Camera2Preview;
 import seoulapp.chok.rokseoul.drawingtool.cameraset.Camera_SurfaceTextureListener;
-import seoulapp.chok.rokseoul.drawingtool.sensorset.SensorSet;
 import seoulapp.chok.rokseoul.drawingtool.sensorset.SensorSet2;
 import seoulapp.chok.rokseoul.drawingtool.view.AutoFitTextureView;
 import seoulapp.chok.rokseoul.drawingtool.view.DrawingView;
@@ -81,12 +72,12 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
     public static int RESULT_LOAD_IMAGE = 1;
 
     //저장된 이미지 불러올 뷰
-    private ImageView imageView;
+    private FrameLayout imageViewFrame;
+    //private ImageView imageView;
 
     //센서
     //private SensorSet sensorSet;
     private SensorSet2 sensorSet2;
-
 
 
     /**
@@ -105,7 +96,10 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
 
 
         mAuth = FirebaseAuth.getInstance();
-        storageSet = new StorageSet(this);
+
+        if(!MainActivity.placeName.isEmpty()) placeName = MainActivity.placeName;
+        Log.d("QRcode", "Draw-placeName : " +placeName);
+        storageSet = new StorageSet(this, placeName);
 
         //get drawing view
         drawView = (DrawingView) findViewById(R.id.drawing);
@@ -143,7 +137,8 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
         loadBtn = (ImageButton) findViewById(R.id.load_btn);
         loadBtn.setOnClickListener(this);
 
-        imageView = (ImageView) findViewById(R.id.imageView);
+        imageViewFrame = (FrameLayout) findViewById(R.id.imageViewFrame);
+        //imageView = (ImageView) findViewById(R.id.imageView);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //API21이상
@@ -155,8 +150,9 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
             cameraListener = new Camera_SurfaceTextureListener(this);
         }
 
-        //sensorSet = new SensorSet(this);
-        sensorSet2 = new SensorSet2(this);
+        sensorSet2 = new SensorSet2(this, storageSet);
+
+
     }
 
 
@@ -171,7 +167,6 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
         } else {
             Log.d("SDK", "SDK version 21- : " + Build.VERSION.SDK_INT);
         }
-        //sensorSet.onPause();
         sensorSet2.onPause();
     }
 
@@ -187,7 +182,6 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
             textureView.setSurfaceTextureListener(cameraListener);
             Log.d("SDK", "SDK version 21- : " + Build.VERSION.SDK_INT);
         }
-        //sensorSet.onResume();
         sensorSet2.onResume();
     }
 
@@ -214,7 +208,6 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
                     int grantResult = grantResults[i];
                     if (permission.equals(Manifest.permission.CAMERA)) {
                         if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                            //textureView = (TextureView) findViewById(R.id.textureView);
                             textureView = (AutoFitTextureView) findViewById(R.id.textureView);
                             camera2Preview = new Camera2Preview(this, textureView);
                             camera2Preview.openCamera(textureView.getWidth(), textureView.getHeight());
@@ -229,13 +222,6 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
         }
     }
 
-    /*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }*/
 
     //user clicked paint
     public void paintClicked(View view) {
@@ -342,7 +328,7 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
                 public void onClick(DialogInterface dialog, int which) {
                     drawView.startNew();
                     dialog.dismiss();
-                    imageView.setImageResource(android.R.color.transparent);
+                    //imageView.setImageResource(android.R.color.transparent);
                 }
             });
             newDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -353,14 +339,13 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
             newDialog.show();
         } else if (view.getId() == R.id.save_btn) {
             //save drawing
-            if(!MainActivity.placeName.isEmpty()) placeName = MainActivity.placeName;
-            Log.d("QRcode", "Draw-placeName : " +placeName);
-
             AlertDialog.Builder saveDialog = new AlertDialog.Builder(this);
             saveDialog.setTitle("Save drawing");
             saveDialog.setMessage("Place : " + placeName
                     +"\nDirection : "+sensorSet2.getSensorDirection()
-                    + " / Degree:"+ sensorSet2.getSensorDegree()
+                    + " / Azimuth:"+ sensorSet2.getSensorAzimuth()
+                    + " / Pitch:"+ sensorSet2.getSensorPitch()
+                    + " / Roll:"+ sensorSet2.getSensorRoll()
                     +"\nSave drawing to firebase?");
             saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
@@ -370,8 +355,9 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
                     //메모리그림을 변환
                     Bitmap screenshot = Bitmap.createBitmap(drawView.getDrawingCache());
                     //firebase에 저장
-                    storageSet.uploadFromMemory(screenshot, placeName, mAuth.getCurrentUser().getUid()
-                            , sensorSet2.getSensorDirection(), sensorSet2.getSensorDegree());
+                    storageSet.uploadFromMemory(screenshot, mAuth.getCurrentUser().getUid()
+                            , sensorSet2.getSensorDirection(), sensorSet2.getSensorAzimuth()
+                            ,sensorSet2.getSensorPitch(), sensorSet2.getSensorRoll());
 
                     drawView.destroyDrawingCache();
                     drawView.startNew();
@@ -422,8 +408,10 @@ public class DrawingActivity extends AppCompatActivity implements OnClickListene
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+
+            ImageView imageView = new ImageView(this);
             imageView.setImageBitmap(bitmap);
-            //drawView.setImageBitmap(bitmap);
+            imageViewFrame.addView(imageView);
             // Do something with the bitmap
 
 

@@ -11,6 +11,23 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="전체 게시물 수 : "
+            android:textSize="15sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/profile_totaldoodles"
+            android:text="0"
+            android:textSize="15sp"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,7 +42,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="게시물 수 : "
+            android:text="나의 게시물 수 : "
             android:layout_marginLeft="4dp"
             android:layout_gravity="bottom"
             android:textSize="20sp" />
@@ -35,7 +52,7 @@
             android:id="@+id/profile_doodles"
             android:textSize="20sp"
             android:layout_gravity="bottom"
-            android:text="아직" />
+            android:text="0" />
     </LinearLayout>
 
     <TextView
