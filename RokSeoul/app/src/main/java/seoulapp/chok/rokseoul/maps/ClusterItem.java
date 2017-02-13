@@ -3,8 +3,7 @@ package seoulapp.chok.rokseoul.maps;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
- * Created by JIEUN on 2016-09-17.
- * 구글맵 클러스터링을 위한 클래스! 과연 쓸데가 있을까?
+ * Created by JIEUN(The CHOK) on 2016-09-17.
  */
 
 public class ClusterItem implements com.google.maps.android.clustering.ClusterItem{
@@ -12,13 +11,11 @@ public class ClusterItem implements com.google.maps.android.clustering.ClusterIt
     private final LatLng mPosition;
     private String sightN;
     private String contents;
-    private String contentData;
 
     public ClusterItem(double lat, double lng, String sightN, String contents){
         mPosition = new LatLng(lat, lng);
         this.sightN = sightN;
         this.contents = contents;
-        this.contentData = contentData;
     }
 
     @Override
@@ -29,8 +26,6 @@ public class ClusterItem implements com.google.maps.android.clustering.ClusterIt
     public String getSightN(){ return sightN;}
 
     public String getContents(){ return contents;}
-
-    public String getContentData(){ return contentData;}
 
 
 }

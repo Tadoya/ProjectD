@@ -13,7 +13,6 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
 import seoulapp.chok.rokseoul.R;
 
@@ -23,6 +22,8 @@ import seoulapp.chok.rokseoul.R;
  *
  * Sue Smith
  * August 2013
+ *
+ * modified by SeongSik Choi (The CHOK)
  *
  */
 public class DrawingView extends View {

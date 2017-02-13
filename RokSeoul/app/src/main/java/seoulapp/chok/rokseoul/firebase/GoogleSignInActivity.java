@@ -16,14 +16,18 @@
 
 package seoulapp.chok.rokseoul.firebase;
 
+/**
+ * modified by SeongSik Choi (The CHOK) on 2016. 10. 28..
+ */
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,12 +47,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import seoulapp.chok.rokseoul.BaseActivity;
 import seoulapp.chok.rokseoul.MainActivity;
 import seoulapp.chok.rokseoul.R;
-import seoulapp.chok.rokseoul.firebase.models.User;
 
 /**
  * Demonstrate Firebase Authentication using a Google ID Token.
@@ -72,6 +79,8 @@ public class GoogleSignInActivity extends BaseActivity implements
 
     private GoogleApiClient mGoogleApiClient;
     private TextView mStatusTextView;
+    private TextView mNickNameTextView;
+    private Button mNickNameButton;
 
     public static Boolean stayLogin = true;
 
@@ -85,12 +94,13 @@ public class GoogleSignInActivity extends BaseActivity implements
 
         // Views
         mStatusTextView = (TextView) findViewById(R.id.status);
+        mNickNameTextView =(TextView) findViewById(R.id.nickname_textview);
 
         // Button listeners
+        mNickNameButton = (Button) findViewById(R.id.username_change_button);
         findViewById(R.id.sign_in_button).setOnClickListener(this);
         findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
-        findViewById(R.id.username_change_button).setOnClickListener(this);
+        mNickNameButton.setOnClickListener(this);
 
         // [START config_signin]
         // Configure Google Sign In
@@ -124,9 +134,39 @@ public class GoogleSignInActivity extends BaseActivity implements
                 // [START_EXCLUDE]
                 updateUI(user);
                 // [END_EXCLUDE]
+
             }
         };
         // [END auth_state_listener]
+
+        if(mAuth.getCurrentUser() != null) {
+            mDatabase.child("users")
+                    .child(mAuth.getCurrentUser().getUid())
+                    .child("username")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            try {
+                                String nickName = dataSnapshot.getValue().toString();
+                                Log.d(TAG, "nickName : " + nickName);
+                                if(nickName.isEmpty() || nickName.equals("")){
+                                    mNickNameButton.setText("별명 만들기");
+                                    mNickNameTextView.setText("별명을 만들어보세요!");
+                                }else {
+                                    mNickNameButton.setText("별명 바꾸기");
+                                    mNickNameTextView.setText("별명 : " + nickName);
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "nickName" + e);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+        }
     }
 
     // [START on_start_add_listener]
@@ -163,7 +203,6 @@ public class GoogleSignInActivity extends BaseActivity implements
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = result.getSignInAccount();
                 firebaseAuthWithGoogle(account);
-
             } else {
                 // Google Sign In failed, update UI appropriately
                 // [START_EXCLUDE]
@@ -188,11 +227,6 @@ public class GoogleSignInActivity extends BaseActivity implements
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
 
-
-                        // [START_EXCLUDE]
-                        hideProgressDialog();
-                        // [END_EXCLUDE]
-
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
@@ -204,9 +238,11 @@ public class GoogleSignInActivity extends BaseActivity implements
                         else{
                             // 로그인 성공시 다음 단계로
                             stayLogin = true;
-
                             onAuthSuccess(mAuth.getCurrentUser());
                         }
+                        // [START_EXCLUDE]
+                        hideProgressDialog();
+                        // [END_EXCLUDE]
                     }
                 });
     }
@@ -229,13 +265,21 @@ public class GoogleSignInActivity extends BaseActivity implements
                     @Override
                     public void onResult(@NonNull Status status) {
                         updateUI(null);
+                        mStatusTextView.setText(R.string.signed_out);
                     }
                 });
     }
 
-    private void revokeAccess() {
-        // Firebase sign out
+    private void revoke() {
         mAuth.signOut();
+
+        mAuth.getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(getApplicationContext(), "회원탈퇴 성공", Toast.LENGTH_SHORT)
+                        .show();
+            }
+        });
 
         // Google revoke access
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
@@ -243,6 +287,7 @@ public class GoogleSignInActivity extends BaseActivity implements
                     @Override
                     public void onResult(@NonNull Status status) {
                         updateUI(null);
+
                     }
                 });
     }
@@ -255,12 +300,12 @@ public class GoogleSignInActivity extends BaseActivity implements
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
             findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
             findViewById(R.id.username_change_button).setVisibility(View.VISIBLE);
+            mNickNameTextView.setVisibility(View.VISIBLE);
         } else {
-            mStatusTextView.setText(R.string.signed_out);
-
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
             findViewById(R.id.username_change_button).setVisibility(View.GONE);
+            mNickNameTextView.setVisibility(View.GONE);
         }
     }
 
@@ -279,22 +324,22 @@ public class GoogleSignInActivity extends BaseActivity implements
             signIn();
         } else if (i == R.id.sign_out_button) {
             signOut();
-        } else if (i == R.id.disconnect_button) {
-            revokeAccess();
         } else if (i == R.id.username_change_button){
+
             AlertDialog.Builder usernameDialog = new AlertDialog.Builder(this);
-            usernameDialog.setTitle("Change username");
-            usernameDialog.setMessage("What do you want to change your name to?");
+            usernameDialog.setTitle("별명 설정");
+            usernameDialog.setMessage("당신의 별명은 무엇인가요?");
             final EditText input = new EditText(this);
             usernameDialog.setView(input);
-            usernameDialog.setPositiveButton("Change", new DialogInterface.OnClickListener() {
+            usernameDialog.setPositiveButton("설정하기", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     //save drawing
                     mDatabase.child("users").child(mAuth.getCurrentUser()
                             .getUid()).child("username").setValue(input.getText().toString());
+                    finish();
                 }
             });
-            usernameDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            usernameDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
                 }
@@ -310,7 +355,7 @@ public class GoogleSignInActivity extends BaseActivity implements
         writeNewUser(user.getUid(), username, user.getEmail());
 
         // Go to MainActivity
-        startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
+        startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 
@@ -326,7 +371,6 @@ public class GoogleSignInActivity extends BaseActivity implements
     private void writeNewUser(String userId, String name, String email) {
 
         mDatabase.child("users").child(userId).child("email").setValue(email);
-        //mDatabase.child("users").child(userId).child("username").setValue(name);
     }
     // [END basic_write]
 }

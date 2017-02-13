@@ -1,41 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+<menu
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <!--group android:checkableBehavior="single"-->
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:title="낙서하기" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/nav_mydoodle"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
-    </group>
+            android:title="내 낙서 보기" />
+
+    <!--/group-->
 
     <item android:title="Login Menu">
         <menu>
             <item
                 android:id="@+id/account_settings"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Account Settings" />
-            <item
-                android:id="@+id/log_out"
-                android:icon="@drawable/ic_menu_send"
-                android:title="LOGOUT" />
-            <item
-                android:id="@+id/my_doodle"
-                android:icon="@drawable/ic_menu_send"
-                android:title="MY DOODLE" />
+                android:icon="@drawable/ic_menu_manage"
+                android:title="내 계정 관리" />
         </menu>
     </item>
-    <item
-        android:id="@+id/nav_manage"
-        android:icon="@drawable/ic_menu_manage"
-        android:title="Tools" />
 
 </menu>

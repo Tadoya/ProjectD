@@ -43,8 +43,8 @@ import seoulapp.chok.rokseoul.drawingtool.view.AutoFitTextureView;
 
 /**
  * Created by BRB_LAB on 2016-06-07.
- * Modified by Tadoya on 2016-09-29.
- * api level 19에 설치하는 과정에서도 CAMERA2ACCEESSEXEPTION 오류가 안 뜨도록 수정
+ * Modified by SeongSik Choi (The CHOK) on 2016-09-29.
+ * api level 19에 설치하는 과정에서도 CAMERA2 ACCEESSEXEPTION 오류가 안 뜨도록 수정
  */
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Camera2Preview extends Thread {

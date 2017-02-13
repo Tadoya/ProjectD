@@ -7,11 +7,8 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.Surface;
 import android.view.TextureView;
-import android.widget.FrameLayout;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,7 +18,7 @@ import seoulapp.chok.rokseoul.drawingtool.view.AutoFitTextureView;
 
 
 /**
- * modified by choiseongsik on 2016. 8. 14..
+ * Modified by SeongSik Choi (The CHOK) on 2016. 8. 14..
  */
 public class Camera_SurfaceTextureListener extends AutoFitTextureView implements TextureView.SurfaceTextureListener {
 
@@ -58,14 +55,11 @@ public class Camera_SurfaceTextureListener extends AutoFitTextureView implements
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         }
 
-        //mPreviewSize = mCamera.getParameters().getPreviewSize();
         mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes,width,height);
         parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
 
-        //parameters.setPreviewFpsRange(20000,20000);
         mCamera.setParameters(parameters);
 
-        //setLayoutParams(new FrameLayout.LayoutParams(mPreviewSize.width, mPreviewSize.height, Gravity.CENTER));
 
         try {
             mCamera.setPreviewTexture(surface);
@@ -139,44 +133,6 @@ public class Camera_SurfaceTextureListener extends AutoFitTextureView implements
         setTransform(matrix);
     }
 
-    /*
-    public Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
-
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) h / w;
-
-        if (sizes == null)
-            return null;
-
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = h;
-
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
-                continue;
-
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-
-        return optimalSize;
-    }
-    */
     public Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
 
         final double ASPECT_TOLERANCE = 0.1;

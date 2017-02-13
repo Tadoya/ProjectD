@@ -1,7 +1,7 @@
 package seoulapp.chok.rokseoul.maps;
 
 /**
- * Created by JIEUN on 2016-08-16.
+ * Modified by JIEUN(The CHOK) on 2016-08-16.
  */
 
 import android.Manifest;

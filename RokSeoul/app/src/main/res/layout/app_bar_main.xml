@@ -19,9 +19,13 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
             android:layout_gravity="bottom|right"
-            app:srcCompat="@drawable/drawon" />
-    </FrameLayout>
+            android:scaleType="center"
+            app:srcCompat="@drawable/markerpen"
+            app:backgroundTint="@color/colorAccent"
+            app:elevation="24dp"
+            app:fabSize="normal" />
 
+    </FrameLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>

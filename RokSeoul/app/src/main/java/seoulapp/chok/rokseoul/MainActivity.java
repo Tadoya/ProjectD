@@ -1,5 +1,9 @@
 package seoulapp.chok.rokseoul;
 
+/**
+ * Created by SeongSik Choi, JIEUN (The CHOK) on 2016. 9. 29..
+ */
+
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,8 +13,8 @@ import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,13 +27,15 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import seoulapp.chok.rokseoul.displayingbitmaps.ui.ImageGridActivity;
 import seoulapp.chok.rokseoul.drawingtool.DrawingActivity;
 import seoulapp.chok.rokseoul.firebase.GoogleSignInActivity;
 import seoulapp.chok.rokseoul.firebase.models.User;
 import seoulapp.chok.rokseoul.maps.MapsActivity;
+import seoulapp.chok.rokseoul.util.TranslationUtil;
 
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
@@ -43,14 +49,19 @@ public class MainActivity extends AppCompatActivity
     private FragmentManager fm;
 
     private TextView profile_userName, profile_email, profile_doodles, profile_totaldoodles;
+    private String myDoodleCount="";
     public static String placeName="";
+
+    private ProgressBar progressBar_main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //setContentView(R.layout.activity_main_second);
+
+        progressBar_main = (ProgressBar) findViewById(R.id.progressbar_main);
+        progressBar_main.setVisibility(View.VISIBLE);
         mAuth = FirebaseAuth.getInstance();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -58,39 +69,17 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
 
-                /*
                 IntentIntegrator scanIntegrator = new IntentIntegrator(MainActivity.this);
                 scanIntegrator.setCaptureActivity(QRAcvitivy.class);
                 scanIntegrator.setOrientationLocked(true);
                 scanIntegrator.initiateScan();
-                */
 
-                startActivity(new Intent(getApplicationContext(), DrawingActivity.class));
+
+                //startActivity(new Intent(getApplicationContext(), DrawingActivity.class));
             }
         });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                mTotalDoodles.addListenerForSingleValueEvent(mTotalValueEventListener);
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                if(mTotalValueEventListener != null) mTotalDoodles.removeEventListener(mTotalValueEventListener);
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -99,7 +88,7 @@ public class MainActivity extends AppCompatActivity
         View v = navigationView.getHeaderView(0);
         profile_userName = (TextView) v.findViewById(R.id.profile_userName);
         profile_email = (TextView) v.findViewById(R.id.profile_email);
-        profile_doodles = (TextView) v.findViewById(R.id.profile_doodles);
+        profile_doodles = (TextView) v.findViewById(R.id.profile_doodles2);
         profile_totaldoodles = (TextView) v.findViewById(R.id.profile_totaldoodles);
 
         v.findViewById(R.id.profile_imageView).setOnClickListener(new View.OnClickListener() {
@@ -109,6 +98,16 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(getApplicationContext(),GoogleSignInActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
+            }
+        });
+        v.findViewById(R.id.profile_doodles1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(myDoodleCount.isEmpty() || myDoodleCount.equals("0")){
+                    Toast.makeText(getApplicationContext(), "게시물이 없습니다.", Toast.LENGTH_SHORT).show();
+                }else {
+                    startActivity(new Intent(getApplicationContext(), ImageGridActivity.class));
+                }
             }
         });
 
@@ -126,13 +125,13 @@ public class MainActivity extends AppCompatActivity
                     User user = dataSnapshot.getValue(User.class);
                     profile_userName.setText(user.username);
                     profile_email.setText(user.email);
-                    String doodleCount = dataSnapshot.child("doodles").getValue().toString();
-                    profile_doodles.setText(doodleCount);
-                    Log.d("MainActivity", "datasnapshot.doodles(realtime): " + doodleCount);
+                    myDoodleCount = dataSnapshot.child("doodles").getValue().toString();
+                    profile_doodles.setText(myDoodleCount);
+                    Log.d("MainActivity", "datasnapshot.doodles(realtime): " + myDoodleCount);
                 }catch (Exception e){
                     Log.e(TAG, "databaseDoodle Error"+e);
                 }
-
+                progressBar_main.setVisibility(View.GONE);
             }
 
             @Override
@@ -146,6 +145,7 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
                     String totalDoodles = dataSnapshot.getValue().toString();
+                    if(Integer.parseInt(totalDoodles) < 0) totalDoodles = "0";
                     profile_totaldoodles.setText(totalDoodles);
                     Log.d(TAG, "Totaldoodles : " +totalDoodles);
                 }catch (Exception e){
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        FragmentManager fm = getFragmentManager();
+        fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.content_frame, new MapsActivity()).commit();
     }
 
@@ -190,52 +190,27 @@ public class MainActivity extends AppCompatActivity
              * create an instance of the IntentIntegrator class we imported,
              * and then call on the initiateScan() method to start scanning
              */
-            if(placeName.isEmpty()) {
                 IntentIntegrator scanIntegrator = new IntentIntegrator(this);
                 scanIntegrator.setCaptureActivity(QRAcvitivy.class);
                 scanIntegrator.setOrientationLocked(true);
                 scanIntegrator.initiateScan();
+
+        } else if (id == R.id.nav_mydoodle) {
+
+            if(myDoodleCount.isEmpty() || myDoodleCount.equals("0")){
+                Toast.makeText(getApplicationContext(), "게시물이 없습니다.", Toast.LENGTH_SHORT).show();
+            }else {
+                startActivity(new Intent(getApplicationContext(), ImageGridActivity.class));
             }
 
-        } else if (id == R.id.nav_gallery) {
+        }  else if (id == R.id.account_settings) {
 
-            Toast.makeText(MainActivity.this, "갤러리를 선택했습니다.", Toast.LENGTH_SHORT).show();
-
-        } else if (id == R.id.nav_slideshow) {
-
-            Toast.makeText(MainActivity.this, "슬라이드쇼를 선택했습니다.", Toast.LENGTH_SHORT).show();
-
-        } else if (id == R.id.account_settings) {
-
-            //Toast.makeText(MainActivity.this, "로그인을 선택했습니다.", Toast.LENGTH_SHORT).show();
             GoogleSignInActivity.stayLogin = false;
             Intent intent = new Intent(getApplicationContext(),GoogleSignInActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
 
-
-        } else if (id == R.id.log_out) {
-
-            Toast.makeText(MainActivity.this, "로그아웃을 선택했습니다.", Toast.LENGTH_SHORT).show();
-
-        } else if (id == R.id.my_doodle) {
-
-            //Toast.makeText(MainActivity.this, "내 낙서를 선택했습니다.", Toast.LENGTH_SHORT).show();
-            //fragmentManager.beginTransaction().replace()
-            //startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-            fm.beginTransaction().replace(R.id.content_frame, new MapsActivity()).commit();
-            /*
-              FragmentManager fragmentManager = activity.getSupportFragmentManager();
-             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-             Fragment newFragment = new FragmentType1();
-             fragmentTransaction.replace(R.id.frameTitle, casinodetailFragment, "fragmentTag");
-             //fragmentTransaction.addToBackStack(null);
-             fragmentTransaction.commit();
-             */
         }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
@@ -246,7 +221,7 @@ public class MainActivity extends AppCompatActivity
         if(mAuth.getCurrentUser() == null){
             finish();
         }
-        mMyDatabase.addValueEventListener(mMyValueEventListener);
+        mMyDatabase.addListenerForSingleValueEvent(mMyValueEventListener);
         mTotalDoodles.addListenerForSingleValueEvent(mTotalValueEventListener);
     }
 
@@ -288,16 +263,17 @@ public class MainActivity extends AppCompatActivity
                  * Now our program has the format and content of the scanned data,
                  * so you can do whatever you want with it.
                  */
-                //contentTextView.setText("Content : " + scanContent);
-                //formatTextView.setText("Format : " + scanFormat);
-                Toast.makeText(getApplicationContext(), "Contents : "+scanContent
-                        +"\nFormat : "+ scanFormat, Toast.LENGTH_LONG).show();
-                placeName = scanContent;
-                Intent intent = new Intent(getApplicationContext(), DrawingActivity.class);
-                startActivity(intent);
-                Log.d("QRcode", "Main-placeName : " +placeName);
+                if(TranslationUtil.possibilitiyQRPlace(scanContent)) {
+                    placeName = TranslationUtil.transPlaceNameSightIDtoEN(scanContent);
+                    Toast.makeText(getApplicationContext(), "이곳은 " +
+                            TranslationUtil.transPlaceNameENtoKOR(placeName)+"입니다!", Toast.LENGTH_LONG).show();
+
+                    Intent intent = new Intent(getApplicationContext(), DrawingActivity.class);
+                    startActivity(intent);
+                    Log.d("QRcode", "Main-placeName : " + placeName);
+                }else Toast.makeText(getApplicationContext(), "DB에 없는 지명입니다", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getApplicationContext(), "No scan data received!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "QR코드 데이터를 받지 못했습니다.", Toast.LENGTH_SHORT).show();
             }
         } else {
             /**
@@ -305,7 +281,7 @@ public class MainActivity extends AppCompatActivity
              * (for example, if the user cancels the scan by pressing the back button),
              * we can simply output a message.
              */
-            Toast.makeText(getApplicationContext(), "No scan data received!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "QR코드 데이터를 받지 못했습니다", Toast.LENGTH_SHORT).show();
         }
     }
 
